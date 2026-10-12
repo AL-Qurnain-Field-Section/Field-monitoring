@@ -225,7 +225,7 @@ html,body{background:#050a0d}
   <div class="brand"><div class="brandmark"></div><div><b>MdOC</b><small>MIDLAND OIL COMPANY</small></div></div>
   <div class="topWell"><span>Well</span><strong id="topWell">QRN-01</strong></div>
   <div class="topWell"><span>Rig</span><strong id="topRig">Rig-04</strong></div>
-  <div class="topWell"><span>Field</span><strong>Qarnain</strong></div>
+  <div class="topWell"><span>Field</span><strong id="topField">Qarnain</strong></div>
   <div class="topWell"><span>Mode</span><strong id="topMode">DRILLING</strong></div>
   <div class="topRight">
     <div class="clock" id="clock">--:--:--</div>
@@ -268,7 +268,7 @@ html,body{background:#050a0d}
 <main class="main">
   <section class="left">
     <div class="panel"><div class="panelHead">Active Wells <span>LIVE</span></div><div class="wells" id="wellList"></div></div>
-    <div class="panel fuelPanel"><div class="panelHead">Fuel Inventory <span>EXCEL · 7 TANKS</span></div><div class="fuelDashboard" id="fuelGrid"></div></div>
+    <div class="panel fuelPanel"><div class="panelHead">Fuel Inventory <span id="fuelHeadTag">NO DATA</span></div><div class="fuelDashboard" id="fuelGrid"></div></div>
   </section>
 
   <section class="center">
@@ -283,18 +283,18 @@ html,body{background:#050a0d}
       <div class="bitVisual" id="bitVisual"><span></span><b>BIT</b></div>
       <div class="rotation" id="rotation"></div><div class="flow" id="flowDown"></div><div class="flow up" id="flowUp"></div><div class="bitPulse" id="bitPulse"></div>
       <div class="heroControls"><button class="btn green" id="drillBtn">DRILL</button><button class="btn" id="connectionBtn">CONNECTION</button><button class="btn" id="tripBtn">TRIP</button><button class="btn" id="pauseBtn">PAUSE</button><span class="depthRead" id="heroDepth">2,346.5 m</span></div>
-      <div class="stateStrip"><span>OPERATION <b id="operation">DRILLING</b></span><span>STATE <b id="state">ROTARY DRILLING</b></span><span>ROP <b id="heroRop">22.4 m/hr</b></span><span>RPM <b id="heroRpm">98</b></span><span>FLOW <b id="heroFlow">620 gpm</b></span><span>SIM <b id="simTime">00:00:00</b></span></div>
+      <div class="stateStrip"><span>OPERATION <b id="operation">DRILLING</b></span><span>STATE <b id="state">ROTARY DRILLING</b></span><span>ROP <b id="heroRop">22.4 m/hr</b></span><span>RPM <b id="heroRpm">98</b></span><span>FLOW <b id="heroFlow">620 gpm</b></span><span>SIM <b id="simTime">00:00:00</b></span><span>SOURCE <b id="sourceLabel">DEMO</b></span></div>
     </div>
     <div class="kpiRow">
-      <div class="miniKpi"><label>ROP</label><strong id="kRop">22.4</strong><em>m/hr</em><div class="bar"><i style="width:74%"></i></div></div>
-      <div class="miniKpi"><label>WOB</label><strong id="kWob">32.1</strong><em>klb</em><div class="bar"><i style="width:67%"></i></div></div>
-      <div class="miniKpi"><label>RPM</label><strong id="kRpm">98</strong><em>rpm</em><div class="bar"><i style="width:78%"></i></div></div>
-      <div class="miniKpi"><label>PUMP PRESSURE</label><strong id="kPress">2,450</strong><em>psi</em><div class="bar"><i style="width:69%"></i></div></div>
+      <div class="miniKpi"><label>ROP</label><strong id="kRop">22.4</strong><em>m/hr</em><div class="bar"><i id="bRop" style="width:74%"></i></div></div>
+      <div class="miniKpi"><label>WOB</label><strong id="kWob">32.1</strong><em>klb</em><div class="bar"><i id="bWob" style="width:67%"></i></div></div>
+      <div class="miniKpi"><label>RPM</label><strong id="kRpm">98</strong><em>rpm</em><div class="bar"><i id="bRpm" style="width:78%"></i></div></div>
+      <div class="miniKpi"><label>PUMP PRESSURE</label><strong id="kPress">2,450</strong><em>psi</em><div class="bar"><i id="bPress" style="width:69%"></i></div></div>
     </div>
   </section>
 
   <section class="right">
-    <div class="panel"><div class="panelHead">Operational Status <span>QRN-01</span></div><div class="statusGrid">
+    <div class="panel"><div class="panelHead">Operational Status <span id="statusWell">QRN-01</span></div><div class="statusGrid">
       <div class="statusItem"><label>Well Depth</label><strong id="rDepth">2,346.5 m</strong></div><div class="statusItem"><label>Total Depth</label><strong id="rTd">3,250 m</strong></div>
       <div class="statusItem"><label>Daily Footage</label><strong id="rFoot">48.5 m</strong></div><div class="statusItem"><label>% To TD</label><strong id="rPct">72.2%</strong></div>
       <div class="statusItem"><label>Est. Time to TD</label><strong id="rEta">40.3 hr</strong></div><div class="statusItem"><label>Current Formation</label><strong id="rForm">SANDSTONE</strong></div>
@@ -341,50 +341,72 @@ function num(v, fallback=NaN){if(v===null||v===undefined||v==="")return fallback
 function key(s){return String(s??"").trim().toLowerCase().replace(/[^a-z0-9]/g,"")}
 function get(obj,...names){const ks=Object.keys(obj||{});for(const n of names){const k=key(n);const hit=ks.find(x=>key(x)===k);if(hit!==undefined)return obj[hit]}return undefined}
 function formationAt(depth){return state.formations.find(f=>depth>=f.top&&depth<=(f.base))||state.formations[state.formations.length-1]||{name:"UNKNOWN",top:0,base:state.td,risk:"—"}}
-function toast(t){const x=$("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2600)}
+function toast(t,ms=2600){const x=$("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),ms)}
 function parseRows(wb,name){const sh=wb.Sheets[name];return sh?XLSX.utils.sheet_to_json(sh,{defval:"",raw:true}):[]}
 function parseKV(rows){const o={};rows.forEach(r=>{const k=r.Parameter??r.Property??r.Field??r.Metric??r.parameter??r.property??r.field??r.metric;const v=r.Value??r.value;if(k!==undefined&&v!==undefined)o[key(k)]=v});return o}
 function findVal(kv,names){for(const n of names){const v=kv[key(n)];if(v!==undefined&&v!=="")return v}return undefined}
 
-function normalizeDate(v){if(v instanceof Date)return v; if(v===null||v===undefined||v==="")return ""; return String(v)}
+const n0=v=>Number.isFinite(v)?v:0;
+const isDate=v=>Object.prototype.toString.call(v)==="[object Date]";
+const pad2=n=>String(n).padStart(2,"0");
+const escH=v=>String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const bopBad=s=>/fail|leak|fault|defect|not ready|out of service|expired|overdue/i.test(String(s||""));
+function xlTime(v){
+ if(v===null||v===undefined||v==="")return "";
+ if(isDate(v)){const d=new Date(v.getTime()+30000);return pad2(d.getHours())+":"+pad2(d.getMinutes())}
+ if(typeof v==="number"&&Number.isFinite(v)){const m=Math.round((v-Math.floor(v))*1440)%1440;return pad2(Math.floor(m/60))+":"+pad2(m%60)}
+ return String(v)
+}
+function xlDate(v){
+ if(v===null||v===undefined||v==="")return "";
+ if(isDate(v)){const d=new Date(v.getTime()+30000);return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())}
+ if(typeof v==="number"&&v>20000){const d=new Date(Math.round((v-25569)*86400000));return d.getUTCFullYear()+"-"+pad2(d.getUTCMonth()+1)+"-"+pad2(d.getUTCDate())}
+ return String(v)
+}
+function xlStamp(v){if(isDate(v))return xlDate(v)+" "+xlTime(v);return v===null||v===undefined?"":String(v)}
+function normalizeDate(v){return xlDate(v)}
+function fuelTankNames(){const s=[];(state.fuel||[]).forEach(r=>{if(r.tank&&!s.includes(r.tank))s.push(r.tank)});return s}
 function fuelByTank(){
- const out={}; for(let i=1;i<=7;i++)out[`Tank-${i}`]=[];
- (state.fuel||[]).forEach(r=>{const t=String(r.tank||"").trim(); if(out[t])out[t].push(r)});
+ const out={}; fuelTankNames().forEach(t=>out[t]=[]);
+ (state.fuel||[]).forEach(r=>{if(out[r.tank])out[r.tank].push(r)});
  Object.values(out).forEach(a=>a.sort((x,y)=>String(x.date).localeCompare(String(y.date))));
  return out;
 }
 function destroyFuelCharts(){Object.values(fuelCharts).forEach(c=>{try{c.destroy()}catch(e){}});fuelCharts={}}
 function renderFuel(){
  const grid=$("fuelGrid"); if(!grid)return;
- const by=fuelByTank();
+ const by=fuelByTank(), names=fuelTankNames();
  const rows=[];
  let totalReceived=0,totalConsumed=0,totalRemaining=0;
- for(let i=1;i<=7;i++){
-   const tank=`Tank-${i}`, arr=by[tank]||[], latest=arr.length?arr[arr.length-1]:null;
+ names.forEach(tank=>{
+   const arr=by[tank]||[];
    const received=arr.reduce((a,r)=>a+(Number(r.received)||0),0);
    const consumed=arr.reduce((a,r)=>a+(Number(r.consumed)||0),0);
-   const remaining=latest&&Number.isFinite(Number(latest.remaining))?Number(latest.remaining):NaN;
+   const lr=[...arr].reverse().find(r=>Number.isFinite(r.remaining));
+   const remaining=lr?lr.remaining:NaN;
    totalReceived+=received; totalConsumed+=consumed; if(Number.isFinite(remaining))totalRemaining+=remaining;
-   rows.push(`<tr><td>${tank}</td><td>${Number.isFinite(consumed)?fmt(consumed,0):"—"}</td><td>${Number.isFinite(received)?fmt(received,0):"—"}</td><td class="remainingCell">${Number.isFinite(remaining)?fmt(remaining,0):"—"}</td></tr>`);
- }
- const hasData=(state.fuel||[]).length>0;
+   rows.push(`<tr><td>${escH(tank)}</td><td>${fmt(consumed,0)}</td><td>${fmt(received,0)}</td><td class="remainingCell">${fmt(remaining,0)}</td></tr>`);
+ });
+ const hasData=names.length>0;
+ if(!hasData)rows.push('<tr><td colspan="4">No fuel data loaded</td></tr>');
+ const tag=$("fuelHeadTag"); if(tag)tag.textContent=hasData?`EXCEL · ${names.length} TANK${names.length>1?"S":""}`:"NO DATA";
  grid.innerHTML=`<table class="fuelDashboardTable"><thead><tr><th>Tank</th><th>Consumed (L)</th><th>Received (L)</th><th>Remaining (L)</th></tr></thead><tbody>${rows.join("")}<tr class="totalRow"><td>TOTAL</td><td>${hasData?fmt(totalConsumed,0):"—"}</td><td>${hasData?fmt(totalReceived,0):"—"}</td><td class="remainingCell">${hasData?fmt(totalRemaining,0):"—"}</td></tr></tbody></table><div class="fuelDashboardNote">Values are calculated directly from the loaded Excel <b>Fuel</b> sheet. Remaining = latest recorded balance for each tank.</div>`;
 }
 
 function renderFuelModalCharts(){
  const by=fuelByTank();
- for(let i=1;i<=7;i++){
-   const el=$("fuelModalChart"+i); if(!el)continue;
-   const rows=by[`Tank-${i}`]||[];
+ fuelTankNames().forEach((tname,idx)=>{
+   const el=$("fuelModalChart"+(idx+1)); if(!el)return;
+   const rows=by[tname]||[];
    new Chart(el,{type:"line",data:{labels:rows.map(r=>r.date||""),datasets:[
     {label:"Consumed",data:rows.map(r=>r.consumed),borderColor:"#6f9079",backgroundColor:"transparent",tension:.25,pointRadius:2,borderWidth:1.5},
     {label:"Remaining",data:rows.map(r=>r.remaining),borderColor:"#66899a",backgroundColor:"transparent",tension:.25,pointRadius:2,borderWidth:1.5},
     {label:"Issued",data:rows.map(r=>r.issued),borderColor:"#b55a4f",backgroundColor:"transparent",tension:.25,pointRadius:2,borderWidth:1.5}
    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#9ba7ab",font:{size:8}}}},scales:{x:{ticks:{color:"#66747a",font:{size:7},maxTicksLimit:7},grid:{color:"#1c272d"}},y:{ticks:{color:"#66747a",font:{size:7}},grid:{color:"#1c272d"}}}}});
- }
+ });
 }
 function renderWellTestCharts(){
- const wrap=$("wellTestCharts"); if(!wrap)return;
+ if(!$("wtOil")&&!$("wtPressure"))return;
  Object.values(wellTestCharts).forEach(c=>{try{c.destroy()}catch(e){}});wellTestCharts={};
  const rows=state.wellTests||[];
  const labels=rows.map(r=>`${r.date||""}${r.time?" "+r.time:""}`.trim());
@@ -407,71 +429,82 @@ function renderWellTestCharts(){
  if(!rows.length) $("wtEmpty")?.classList.add("show");
 }
 function parseFuelRows(rows){
- return rows.map(r=>({date:normalizeDate(get(r,"Date","Timestamp","Time")),tank:String(get(r,"Tank","Tank_ID")||"").trim(),
+ return rows.map(r=>({date:xlDate(get(r,"Date","Timestamp")),tank:String(get(r,"Tank","Tank_ID")||"").trim(),
  opening:num(get(r,"Opening_L","Opening"),NaN),received:num(get(r,"Received_L","Received"),NaN),
  issued:num(get(r,"Issued_L","Issued","Dispensed_L","Dispensed"),NaN),consumed:num(get(r,"Consumed_L","Consumed"),NaN),
- remaining:num(get(r,"Remaining_L","Remaining"),NaN),unit:String(get(r,"Unit")||"L"),comment:String(get(r,"Source/Comment","Comment")||"")})).filter(x=>/^Tank-[1-7]$/i.test(x.tank));
+ remaining:num(get(r,"Remaining_L","Remaining"),NaN),unit:String(get(r,"Unit")||"L"),comment:String(get(r,"Source/Comment","Comment")||"")})).filter(x=>x.tank);
 }
 function parseWellTests(rows){
- return rows.map(r=>({date:normalizeDate(get(r,"Date")),time:normalizeDate(get(r,"Time")),well:String(get(r,"Well")||""),
+ return rows.map(r=>({date:normalizeDate(get(r,"Date")),time:xlTime(get(r,"Time")),well:String(get(r,"Well")||""),
  testId:String(get(r,"Test_ID","Test ID")||""),choke:num(get(r,"Choke"),NaN),whp:num(get(r,"WHP_psi","WHP"),NaN),pwf:num(get(r,"PWF_psi","PWF"),NaN),
  oil:num(get(r,"Oil_Rate_STB_d","Oil Rate"),NaN),water:num(get(r,"Water_Rate_STB_d","Water Rate"),NaN),gas:num(get(r,"Gas_Rate_Mscf_d","Gas Rate"),NaN),
  gor:num(get(r,"GOR_scf_STB","GOR"),NaN),waterCut:num(get(r,"Water_Cut_pct","Water Cut"),NaN),duration:num(get(r,"Duration_hr","Duration"),NaN),remarks:String(get(r,"Remarks")||"")})).filter(x=>x.well||x.testId||Number.isFinite(x.oil)||Number.isFinite(x.gas)||Number.isFinite(x.whp)||Number.isFinite(x.pwf));
 }
 function renderWells(){
- $("wellList").innerHTML=state.wells.map(w=>`<div class="well ${w.id===state.well?"sel":""}" data-well="${w.id}"><i class="wellDot ${w.status==="DRILLING"?"":"amber"}"></i><div><div class="wellName">${w.id}</div><div class="wellSub">${w.rig}</div></div><div><div class="tag ${w.status==="DRILLING"?"":"amber"}">${w.status}</div><div class="wellDepth">${fmt(w.depth,0)} m</div></div></div>`).join("");
+ $("wellList").innerHTML=state.wells.map(w=>`<div class="well ${w.id===state.well?"sel":""}" data-well="${escH(w.id)}"><i class="wellDot ${w.status==="DRILLING"?"":"amber"}"></i><div><div class="wellName">${escH(w.id)}</div><div class="wellSub">${escH(w.rig)}</div></div><div><div class="tag ${w.status==="DRILLING"?"":"amber"}" title="${escH(w.status)}" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(w.status)}</div><div class="wellDepth">${fmt(w.depth,0)} m</div></div></div>`).join("");
  document.querySelectorAll(".well").forEach(x=>x.onclick=()=>selectWell(x.dataset.well));
 }
 function selectWell(id){const w=state.wells.find(x=>x.id===id);if(!w)return;state.well=w.id;state.rig=w.rig;state.depth=num(w.depth,0);state.td=num(w.td,state.td);state.operation=w.operation||w.status||"STANDBY";state.rop=state.operation==="DRILLING"?state.rop:0;state.rpm=state.operation==="DRILLING"?state.rpm:0;state.flow=state.operation==="DRILLING"?state.flow:0;syncUI();toast(`${state.well} selected — ${state.operation}`)}
 function renderTimeline(){
  const ev=state.timeline.length?state.timeline:[];const min=ev.length?Math.min(...ev.map(e=>num(e.depth,0))):0;const max=ev.length?Math.max(...ev.map(e=>num(e.depth,state.td))):state.td;const span=Math.max(1,max-min);
+ if(!ev.length){$("events").innerHTML='<div class="dataEmpty" style="position:static;height:60px">NO TIMELINE DATA LOADED</div>';return}
  $("events").innerHTML=ev.map((e,i)=>{const p=Math.max(3,Math.min(97,((num(e.depth,min)-min)/span)*100));const cls=e.status==="ACTIVE"?"active":e.status==="PLANNED"?"warn":"";return `<div class="event ${cls}" style="left:${p}%"><i></i><time>${e.time}</time><b>${e.event}</b><small>${fmt(num(e.depth,0),0)} m · ${e.status}</small></div>`}).join("");
 }
 function renderAlerts(){
- $("alerts").innerHTML=state.alerts.map(a=>`<div class="alert"><span class="sev ${a.sev==="CRITICAL"||a.sev==="HIGH"?"high":a.sev==="WARNING"||a.sev==="MEDIUM"?"med":"info"}">${a.sev}</span><div><b>${a.text}</b><small>${a.time}${a.depth!==undefined?" · "+fmt(a.depth,0)+" m":""}</small></div><span class="${a.status==="ACTIVE"?"bad":"ack"}">${a.status}</span></div>`).join("");
+ $("alerts").innerHTML=!state.alerts.length?'<div class="dataEmpty" style="height:60px">NO ALERTS LOADED</div>':state.alerts.map(a=>`<div class="alert"><span class="sev ${a.sev==="CRITICAL"||a.sev==="HIGH"?"high":a.sev==="WARNING"||a.sev==="MEDIUM"?"med":"info"}">${a.sev}</span><div><b>${a.text}</b><small>${a.time}${a.depth!==undefined?" · "+fmt(a.depth,0)+" m":""}</small></div><span class="${a.status==="ACTIVE"?"bad":"ack"}">${a.status}</span></div>`).join("");
  $("alertCount").textContent=`${state.alerts.filter(a=>a.status==="ACTIVE").length} ACTIVE`;
 }
 function renderMud(){const el=$("mudGrid");if(!el)return;el.innerHTML=Object.entries(state.mud).slice(0,10).map(([k,v])=>`<div style="border:1px solid #263239;padding:7px;border-radius:4px"><div style="font-size:6px;color:#718087;text-transform:uppercase">${k}</div><div style="font:700 12px Consolas;margin-top:4px">${v}</div></div>`).join("")}
-function renderBop(){const items=state.safety.length?state.safety:demo.safety;$("bopPanel").innerHTML=`<div class="bopBody"><svg class="bopSvg" viewBox="0 0 90 145"><rect x="36" y="8" width="18" height="130" rx="7" fill="#3d4549" stroke="#9ca7aa"/><rect x="26" y="18" width="38" height="22" rx="4" fill="#6b3030" stroke="#a85b5b"/><rect x="18" y="47" width="54" height="20" rx="4" fill="#4a5154" stroke="#9ca4a6"/><rect x="24" y="74" width="42" height="20" rx="4" fill="#4a5154" stroke="#9ca4a6"/><rect x="19" y="102" width="52" height="22" rx="4" fill="#4a5154" stroke="#9ca4a6"/><circle cx="45" cy="135" r="6" fill="#222a2e" stroke="#aab3b5"/></svg><div>${items.slice(0,6).map(i=>`<div class="bopItem"><span>${i.equipment||i.Equipment}</span><b class="ok">${i.status||i.Status}</b></div>`).join("")}</div></div>`}
+function renderBop(){const items=state.source==="EXCEL"?state.safety:(state.safety.length?state.safety:demo.safety);$("bopPanel").innerHTML=`<div class="bopBody"><svg class="bopSvg" viewBox="0 0 90 145"><rect x="36" y="8" width="18" height="130" rx="7" fill="#3d4549" stroke="#9ca7aa"/><rect x="26" y="18" width="38" height="22" rx="4" fill="#6b3030" stroke="#a85b5b"/><rect x="18" y="47" width="54" height="20" rx="4" fill="#4a5154" stroke="#9ca4a6"/><rect x="24" y="74" width="42" height="20" rx="4" fill="#4a5154" stroke="#9ca4a6"/><rect x="19" y="102" width="52" height="22" rx="4" fill="#4a5154" stroke="#9ca4a6"/><circle cx="45" cy="135" r="6" fill="#222a2e" stroke="#aab3b5"/></svg><div>${items.length?items.slice(0,6).map(i=>`<div class="bopItem"><span>${escH(i.equipment||i.Equipment)}</span><b class="${bopBad(i.status||i.Status)?"bad":"ok"}">${escH(i.status||i.Status)}</b></div>`).join(""):'<div class="dataEmpty" style="height:100px">NO BOP DATA LOADED</div>'}</div></div>`}
 function updateDynamicTwin(){
  const ratio=state.td>0?Math.max(0,Math.min(1,state.depth/state.td)):0;const top=31+ratio*43;
  const bit=$("bitVisual"), pulse=$("bitPulse"), string=$("drillStringVisual"), marker=$("depthMarker");
  if(bit)bit.style.top=`${top}%`;if(pulse)pulse.style.top=`${top}%`;if(string)string.style.height=`${Math.max(8,top-31)}%`;
  if(marker){marker.style.top=`calc(26% + ${ratio*57}% )`;marker.dataset.depth=fmt(state.depth,1)+" m"}
  const f=formationAt(state.depth);if($("formationName"))$("formationName").textContent=f.name;if($("formationDepth"))$("formationDepth").textContent=`${fmt(state.depth,1)} m · ${f.risk} RISK`;
- $("rotation").style.animationDuration=`${Math.max(.18,1.4-(state.rpm/180))}s`;
+ $("rotation").style.animationDuration=`${Math.max(.18,1.4-(n0(state.rpm)/180))}s`;
  $("rotation").classList.toggle("paused",state.operation!=="DRILLING"||state.paused);
  const moving=state.operation==="DRILLING"&&!state.paused;$("flowDown").style.animationPlayState=moving?"running":"paused";$("flowUp").style.animationPlayState=moving?"running":"paused";
 }
 function renderAll(){
  const f=formationAt(state.depth),pct=state.td?Math.min(100,state.depth/state.td*100):0;
  $("heroDepth").textContent=fmt(state.depth,1)+" m";$("rDepth").textContent=fmt(state.depth,1)+" m";$("rTd").textContent=fmt(state.td,0)+" m";$("rPct").textContent=fmt(pct,1)+"%";if($("depthBar"))$("depthBar").style.width=pct+"%";$("rFoot").textContent=fmt(state.dailyFootage,1)+" m";$("rEta").textContent=state.rop>0?fmt(Math.max(0,state.td-state.depth)/state.rop,1)+" hr":"—";$("rForm").textContent=f.name;if($("bottomForm"))$("bottomForm").textContent=f.name;
- $("kRop").textContent=fmt(state.rop);$("kWob").textContent=fmt(state.wob);$("kRpm").textContent=fmt(state.rpm,0);$("kPress").textContent=fmt(state.press,0);$("heroRop").textContent=fmt(state.rop)+" m/hr";$("heroRpm").textContent=fmt(state.rpm,0);$("heroFlow").textContent=fmt(state.flow,0)+" gpm";$("operation").textContent=state.operation;$("state").textContent=state.operation==="DRILLING"?"ROTARY DRILLING":state.operation==="CONNECTION"?"CONNECTION":state.operation==="TRIPPING"?"TRIPPING":"STATIC";$("sourceLabel").textContent=state.source;$("topWell").textContent=state.well;$("topRig").textContent=state.rig;$("topMode").textContent=state.operation;
+ $("kRop").textContent=fmt(state.rop);$("kWob").textContent=fmt(state.wob);$("kRpm").textContent=fmt(state.rpm,0);$("kPress").textContent=fmt(state.press,0);$("heroRop").textContent=fmt(state.rop)+" m/hr";$("heroRpm").textContent=fmt(state.rpm,0);$("heroFlow").textContent=fmt(state.flow,0)+" gpm";$("operation").textContent=state.operation;$("state").textContent=state.operation==="DRILLING"?"ROTARY DRILLING":state.operation==="CONNECTION"?"CONNECTION":state.operation==="TRIPPING"?"TRIPPING":"STATIC";if($("sourceLabel"))$("sourceLabel").textContent=state.source;$("topWell").textContent=state.well;$("topRig").textContent=state.rig;$("topMode").textContent=state.operation;
  if($("weatherTemp"))$("weatherTemp").textContent=state.weather.temperature+"°C";if($("weatherCond"))$("weatherCond").textContent=state.weather.condition;
+ if($("statusWell"))$("statusWell").textContent=state.well;
+ if($("topField"))$("topField").textContent=(state.reportConfig&&state.reportConfig.field)||"Qarnain";
+ const bar=(id,v,max)=>{const e=$(id);if(e)e.style.width=(Number.isFinite(v)?Math.max(0,Math.min(100,v/max*100)):0)+"%"};
+ bar("bRop",state.rop,30);bar("bWob",state.wob,48);bar("bRpm",state.rpm,125);bar("bPress",state.press,3550);
  updateDynamicTwin();
 }
 function syncUI(){renderWells();renderTimeline();renderAlerts();renderBop();renderAll();renderFuel();}
-function tick(){if(!state.sim||state.paused)return;state.simSeconds++;if(state.operation==="DRILLING"){state.depth=Math.min(state.td,state.depth+Math.max(.05,state.rop)/3600*20);state.rpm=Math.max(0,state.rpm+(Math.random()-.5)*2);state.press=Math.max(0,state.press+(Math.random()-.5)*35)}else if(state.operation==="TRIPPING"){state.depth=Math.max(0,state.depth-12);state.rpm=0;state.flow=80}else if(state.operation==="CONNECTION"){state.rpm=0;state.flow=0}if(state.depth>=state.td){state.sim=false;state.operation="TD REACHED";toast("Total Depth reached")}renderAll();$("simTime").textContent=new Date(state.simSeconds*1000).toISOString().substring(11,19)}
+function tick(){if(!state.sim||state.paused)return;state.simSeconds++;if(state.operation==="DRILLING"){state.depth=Math.min(state.td,state.depth+Math.max(.05,n0(state.rop))/3600*20);state.rpm=Math.max(0,n0(state.rpm)+(Math.random()-.5)*2);state.press=Math.max(0,n0(state.press)+(Math.random()-.5)*35)}else if(state.operation==="TRIPPING"){state.depth=Math.max(0,state.depth-12);state.rpm=0;state.flow=80}else if(state.operation==="CONNECTION"){state.rpm=0;state.flow=0}if(state.depth>=state.td){state.sim=false;state.operation="TD REACHED";toast("Total Depth reached")}renderAll();$("simTime").textContent=new Date(state.simSeconds*1000).toISOString().substring(11,19)}
 function setOp(op){state.operation=op;state.sim=true;state.paused=false;$("pauseBtn").textContent="PAUSE";renderAll();toast(`Operation state: ${op}`)}
 $("drillBtn").onclick=()=>setOp("DRILLING");$("connectionBtn").onclick=()=>setOp("CONNECTION");$("tripBtn").onclick=()=>setOp("TRIPPING");$("pauseBtn").onclick=()=>{state.paused=!state.paused;$("pauseBtn").textContent=state.paused?"RESUME":"PAUSE";renderAll();toast(state.paused?"Simulation paused":"Simulation resumed")};$("simulateBtn").onclick=()=>{state.sim=!state.sim;toast(state.sim?"Simulation started":"Simulation stopped")};$("emergencyBtn").onclick=()=>{if(confirm("Confirm EMERGENCY STOP?")){state.sim=false;state.paused=true;state.operation="EMERGENCY STOP";renderAll();toast("EMERGENCY STOP engaged")}};
 setInterval(tick,1000);setInterval(()=>$("clock").textContent=new Date().toLocaleTimeString("en-GB"),500);
-function makeTrendData(){if(state.trends.length){return{labels:state.trends.map(r=>r.time),rop:state.trends.map(r=>num(r.rop,state.rop)),press:state.trends.map(r=>num(r.press,state.press)),mw:state.trends.map(r=>num(r.mw,state.mw))}}const labels=[],rop=[],press=[],mw=[];let t=new Date();t.setMinutes(t.getMinutes()-110);for(let i=0;i<24;i++){labels.push(new Date(t.getTime()+i*5*60000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}));rop.push(17+Math.sin(i/2.2)*4+i*.18);press.push(2150+i*15+Math.sin(i/2)*120);mw.push(1.44+Math.sin(i/3)*.025)}return{labels,rop,press,mw}}
+function makeTrendData(){if(state.trends.length){return{labels:state.trends.map(r=>r.time),rop:state.trends.map(r=>num(r.rop,state.rop)),press:state.trends.map(r=>num(r.press,state.press)),mw:state.trends.map(r=>num(r.mw,state.mw))}}if(state.source==="EXCEL")return{labels:[],rop:[],press:[],mw:[]};const labels=[],rop=[],press=[],mw=[];let t=new Date();t.setMinutes(t.getMinutes()-110);for(let i=0;i<24;i++){labels.push(new Date(t.getTime()+i*5*60000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}));rop.push(17+Math.sin(i/2.2)*4+i*.18);press.push(2150+i*15+Math.sin(i/2)*120);mw.push(1.44+Math.sin(i/3)*.025)}return{labels,rop,press,mw}}
 function drawChart(d=makeTrendData()){const ctx=$("trendChart").getContext("2d");if(chart)chart.destroy();chart=new Chart(ctx,{type:"line",data:{labels:d.labels,datasets:[{label:"ROP",data:d.rop,borderColor:"#6f9079",backgroundColor:"#6f90791c",fill:true,tension:.35,pointRadius:0,borderWidth:1.5},{label:"Pump Pressure",data:d.press,borderColor:"#b55a4f",backgroundColor:"transparent",fill:false,tension:.35,pointRadius:0,borderWidth:1.5,yAxisID:"y1"},{label:"Mud Weight",data:d.mw,borderColor:"#c59b45",backgroundColor:"transparent",fill:false,tension:.35,pointRadius:0,borderWidth:1.5,yAxisID:"y2"}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#9ba7ab",font:{size:8}}}},scales:{x:{ticks:{color:"#66747a",font:{size:7},maxTicksLimit:8},grid:{color:"#1c272d"}},y:{ticks:{color:"#66747a",font:{size:7}},grid:{color:"#1c272d"}},y1:{position:"right",ticks:{color:"#66747a",font:{size:7}},grid:{drawOnChartArea:false}},y2:{display:false}}}})}
 function updateChart(){if(!chart)return;const d=makeTrendData();chart.data.labels=d.labels;chart.data.datasets[0].data=d.rop;chart.data.datasets[1].data=d.press;chart.data.datasets[2].data=d.mw;chart.update("none")}
 function openModule(mod){
  const titles={overview:"Well Overview",realtime:"Real-Time Drilling Telemetry",fuel:"Fuel Management",welltest:"Well Test Results",geology:"Geology & Formation Evaluation",mud:"Drilling Fluids / Mud System",bop:"BOP & Well Control",equipment:"Rig Equipment & Asset Health",ops:"Operations Log",alerts:"Alerts & Events",reports:"Reports & Export",settings:"System Settings"};$("modalTitle").textContent=titles[mod]||"Module";let body="";const f=formationAt(state.depth);
  if(mod==="overview")body=`<div class="moduleGrid"><div class="moduleCard"><h3>Current Well</h3><strong>${state.well}</strong><p>${state.rig} · ${state.operation}<br>Depth ${fmt(state.depth,1)} m / TD ${fmt(state.td,0)} m</p></div><div class="moduleCard"><h3>Formation</h3><strong>${f.name}</strong><p>${f.top}–${f.base} m · ${f.risk} risk<br>${f.lithology||"—"}</p></div><div class="moduleCard"><h3>Data Lineage</h3><strong>${state.source}</strong><p>${state.lastFile}<br>All visible values are bound to the loaded engineering model.</p></div></div>`;
- if(mod==="realtime")body=`<table class="table"><thead><tr><th>Parameter</th><th>Value</th><th>Unit</th><th>State</th></tr></thead><tbody>${[["ROP",state.rop,"m/hr","LIVE"],["WOB",state.wob,"klb","LIVE"],["RPM",state.rpm,"rpm",state.operation],["Torque",state.torque,"kft-lb","LIVE"],["Pump Pressure",state.press,"psi","LIVE"],["Flow Rate",state.flow,"gpm",state.flow>0?"ON":"OFF"],["Mud Weight",state.mw,"sg","LIVE"],["ECD",state.ecd,"sg","LIVE"],["Bit Depth",state.depth,"m","LIVE"],["Hook Load",state.hook,"ton","LIVE"]].map(r=>`<tr><td>${r[0]}</td><td><b>${fmt(r[1],r[0]==="RPM"?0:1)}</b></td><td>${r[2]}</td><td style="color:#86ad91">${r[3]}</td></tr>`).join("")}</tbody></table>`;
+ if(mod==="realtime")body=`<table class="table"><thead><tr><th>Parameter</th><th>Value</th><th>Unit</th><th>State</th></tr></thead><tbody>${[["ROP",state.rop,"m/hr","LIVE"],["WOB",state.wob,"klb","LIVE"],["RPM",state.rpm,"rpm",state.operation],["Torque",state.torque,"kft-lb","LIVE"],["Pump Pressure",state.press,"psi","LIVE"],["Flow Rate",state.flow,"gpm",state.flow>0?"ON":"OFF"],["Mud Weight",state.mw,"sg","LIVE"],["ECD",state.ecd,"sg","LIVE"],["Bit Depth",state.depth,"m","LIVE"],["Hook Load",state.hook,"ton","LIVE"]].map(r=>`<tr><td>${r[0]}</td><td><b>${fmt(r[1],["RPM","Pump Pressure","Flow Rate"].includes(r[0])?0:(["Mud Weight","ECD"].includes(r[0])?2:1))}</b></td><td>${r[2]}</td><td style="color:#86ad91">${Number.isFinite(Number(r[1]))?r[3]:"NO DATA"}</td></tr>`).join("")}</tbody></table>`;
  if(mod==="geology")body=`<table class="table"><thead><tr><th>Top</th><th>Base</th><th>Formation</th><th>Lithology</th><th>Risk</th><th>Current</th></tr></thead><tbody>${state.formations.map(x=>`<tr><td>${x.top}</td><td>${x.base}</td><td><b>${x.name}</b></td><td>${x.lithology||"—"}</td><td>${x.risk}</td><td style="color:${state.depth>=x.top&&state.depth<=x.base?"#d0a653":"#6d7b80"}">${state.depth>=x.top&&state.depth<=x.base?"ACTIVE":"—"}</td></tr>`).join("")}</tbody></table>`;
- if(mod==="mud")body=`<div class="moduleGrid">${Object.entries(state.mud).map(([k,v])=>`<div class="moduleCard"><h3>${k}</h3><strong>${v}</strong><p>Loaded from Mud_Props</p></div>`).join("")}</div>`;
- if(mod==="bop")body=`<table class="table"><thead><tr><th>Equipment</th><th>Status</th></tr></thead><tbody>${state.safety.map(x=>`<tr><td>${x.equipment}</td><td style="color:#86ad91">${x.status}</td></tr>`).join("")}</tbody></table>`;
+ if(mod==="mud")body=`<div class="moduleGrid">${Object.entries(state.mud).map(([k,v])=>`<div class="moduleCard"><h3>${k}</h3><strong>${v===""||v===undefined?"—":escH(v)}</strong><p>Loaded from Mud_Props</p></div>`).join("")}</div>`;
+ if(mod==="bop")body=state.safety.length?`<table class="table"><thead><tr><th>Equipment</th><th>Status</th><th>Pressure Rating</th><th>Last Test</th><th>Next Test</th><th>Comment</th></tr></thead><tbody>${state.safety.map(x=>`<tr><td>${escH(x.equipment)}</td><td style="color:${bopBad(x.status)?"#d78080":"#86ad91"}">${escH(x.status)}</td><td>${escH(x.rating||"—")}</td><td>${escH(x.lastTest||"—")}</td><td>${escH(x.nextTest||"—")}</td><td>${escH(x.comment||"")}</td></tr>`).join("")}</tbody></table>`:'<div class="dataEmpty" style="height:200px">NO BOP DATA LOADED</div>';
  if(mod==="equipment")body=`<div class="moduleGrid">${state.bha.map(x=>`<div class="moduleCard"><h3>BHA ${x.sequence}</h3><strong>${x.component}</strong><p>Length ${x.length} m · ${x.status}</p></div>`).join("")}</div>`;
- if(mod==="ops")body=`<table class="table"><thead><tr><th>Time</th><th>Event</th><th>Depth</th><th>Category</th><th>Status</th></tr></thead><tbody>${state.timeline.map(x=>`<tr><td>${x.time}</td><td>${x.event}</td><td>${fmt(x.depth,1)} m</td><td>${x.category}</td><td>${x.status}</td></tr>`).join("")}</tbody></table>`;
+ if(mod==="ops"){const ops=state.operations||[];
+   body=ops.length?`<table class="table"><thead><tr><th>Date</th><th>Time</th><th>Well</th><th>Operation</th><th>Depth</th><th>Duration</th><th>NPT</th><th>Comment</th></tr></thead><tbody>${ops.map(x=>`<tr><td>${escH(x.date)}</td><td>${escH(x.time)}</td><td>${escH(x.well)}</td><td>${escH(x.operation)}</td><td>${Number.isFinite(x.depth)?fmt(x.depth,1)+" m":"—"}</td><td>${Number.isFinite(x.durationMin)?fmt(x.durationMin/60,1)+" hr":"—"}</td><td>${Number.isFinite(x.npt)?fmt(x.npt,0)+" min":"—"}</td><td>${escH(x.comment)}</td></tr>`).join("")}</tbody></table>`:"";
+   if(state.timeline.length)body+=`<table class="table" style="margin-top:12px"><thead><tr><th>Time</th><th>Event</th><th>Depth</th><th>Category</th><th>Status</th></tr></thead><tbody>${state.timeline.map(x=>`<tr><td>${escH(x.time)}</td><td>${escH(x.event)}</td><td>${fmt(x.depth,1)} m</td><td>${escH(x.category)}</td><td>${escH(x.status)}</td></tr>`).join("")}</tbody></table>`;
+   if(!body)body='<div class="dataEmpty" style="height:200px">NO OPERATIONS LOG LOADED</div>'}
  if(mod==="alerts")body=`<table class="table"><thead><tr><th>Time</th><th>Severity</th><th>Event</th><th>Depth</th><th>Status</th></tr></thead><tbody>${state.alerts.map(x=>`<tr><td>${x.time}</td><td>${x.sev}</td><td>${x.text}</td><td>${x.depth!==undefined?fmt(x.depth,0):"—"}</td><td>${x.status}</td></tr>`).join("")}</tbody></table>`;
- if(mod==="fuel")body=`<div class="fuelSummary"><div class="moduleCard"><h3>Total Received</h3><strong>${fmt((state.fuel||[]).reduce((a,r)=>a+(Number(r.received)||0),0),0)} L</strong><p>All seven tanks</p></div><div class="moduleCard"><h3>Total Issued</h3><strong>${fmt((state.fuel||[]).reduce((a,r)=>a+(Number(r.issued)||0),0),0)} L</strong><p>Fuel dispensed</p></div><div class="moduleCard"><h3>Total Consumed</h3><strong>${fmt((state.fuel||[]).reduce((a,r)=>a+(Number(r.consumed)||0),0),0)} L</strong><p>Reported consumption</p></div><div class="moduleCard"><h3>Current Remaining</h3><strong>${fmt((state.fuel||[]).reduce((a,r)=>a+(Number(r.remaining)||0),0),0)} L</strong><p>Latest tank balances</p></div></div><div class="dashboardCharts">${Array.from({length:7},(_,i)=>`<div class="dashboardChart"><div class="chartTitle"><span>Tank-${i+1}</span><small>CONSUMED · REMAINING · ISSUED</small></div><div class="chartArea"><canvas id="fuelModalChart${i+1}"></canvas></div></div>`).join("")}</div>`;
+ if(mod==="fuel"){const by=fuelByTank(),names=fuelTankNames();const sum=k=>(state.fuel||[]).reduce((a,r)=>a+(Number(r[k])||0),0);
+   const remTot=names.reduce((a,t)=>{const lr=[...(by[t]||[])].reverse().find(r=>Number.isFinite(r.remaining));return a+(lr?lr.remaining:0)},0);
+   body=`<div class="fuelSummary"><div class="moduleCard"><h3>Total Received</h3><strong>${fmt(sum("received"),0)} L</strong><p>${names.length} tank(s)</p></div><div class="moduleCard"><h3>Total Issued</h3><strong>${fmt(sum("issued"),0)} L</strong><p>Fuel dispensed</p></div><div class="moduleCard"><h3>Total Consumed</h3><strong>${fmt(sum("consumed"),0)} L</strong><p>Reported consumption</p></div><div class="moduleCard"><h3>Current Remaining</h3><strong>${fmt(remTot,0)} L</strong><p>Latest tank balances</p></div></div><div class="dashboardCharts">${names.length?names.map((t,i)=>`<div class="dashboardChart"><div class="chartTitle"><span>${escH(t)}</span><small>CONSUMED · REMAINING · ISSUED</small></div><div class="chartArea"><canvas id="fuelModalChart${i+1}"></canvas></div></div>`).join(""):'<div class="dataEmpty" style="height:120px">No fuel data loaded</div>'}</div>`}
  if(mod==="welltest")body=`<div class="moduleGrid"><div class="moduleCard"><h3>Latest Test</h3><strong>${state.wellTests.length?state.wellTests[state.wellTests.length-1].testId||"TEST":"—"}</strong><p>${state.wellTests.length?state.wellTests[state.wellTests.length-1].well||state.well:"No Well Test data loaded"}</p></div><div class="moduleCard"><h3>Oil Rate</h3><strong>${state.wellTests.length?fmt(state.wellTests[state.wellTests.length-1].oil,0):"—"}</strong><p>STB/d</p></div><div class="moduleCard"><h3>Water Cut</h3><strong>${state.wellTests.length?fmt(state.wellTests[state.wellTests.length-1].waterCut,1):"—"}%</strong><p>Latest test</p></div></div><div class="dashboardCharts"><div class="dashboardChart"><div class="chartTitle"><span>Oil Rate</span><small>STB/d</small></div><div class="chartArea"><canvas id="wtOil"></canvas></div></div><div class="dashboardChart"><div class="chartTitle"><span>Water Rate</span><small>STB/d</small></div><div class="chartArea"><canvas id="wtWater"></canvas></div></div><div class="dashboardChart"><div class="chartTitle"><span>Gas Rate</span><small>MSCF/d</small></div><div class="chartArea"><canvas id="wtGas"></canvas></div></div><div class="dashboardChart"><div class="chartTitle"><span>WHP vs PWF</span><small>PRESSURE / PSI</small></div><div class="chartArea"><canvas id="wtPressure"></canvas></div></div></div>`;
  if(mod==="reports")body=`<div class="moduleGrid"><div class="moduleCard"><h3>Executive Report</h3><strong>${state.well}</strong><p>Report uses the same live state as the Digital Twin.</p><button class="btn green" onclick="openReportPreview()">PREVIEW / PRINT</button> <button class="btn" onclick="exportReport()">EXPORT HTML</button></div><div class="moduleCard"><h3>Data Quality</h3><strong>${state.source}</strong><p>Source: ${state.lastFile}<br>Well ${state.well} · ${fmt(state.depth,1)} m · ${f.name}</p></div><div class="moduleCard"><h3>Single Source of Truth</h3><strong>CONNECTED</strong><p>Excel → Data Model → Digital Twin → Timeline → Report.</p></div></div>`;
  if(mod==="settings")body=`<div class="moduleGrid"><div class="moduleCard"><h3>Data Source</h3><strong>${state.source}</strong><p>Use LOAD EXCEL to replace the engineering state.</p></div><div class="moduleCard"><h3>Simulation</h3><strong>DEPTH-COUPLED</strong><p>Bit position, formation, timeline, KPIs and report respond to state changes.</p></div><div class="moduleCard"><h3>Display</h3><strong>INDUSTRIAL</strong><p>Graphite / steel / earth / safety amber palette.</p></div></div>`;
+ if(state.source==="EXCEL"&&((mod==="equipment"&&!state.bha.length)||(mod==="geology"&&!state.formations.length)||(mod==="alerts"&&!state.alerts.length)||(mod==="mud"&&!Object.keys(state.mud).length)))body='<div class="dataEmpty" style="height:200px">NO DATA LOADED — fill the matching sheet in the Excel file</div>';
  $("modalBody").innerHTML=body;$("modal").classList.add("show");if(mod==="fuel")setTimeout(renderFuelModalCharts,30);if(mod==="welltest")setTimeout(renderWellTestCharts,30);
 }
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");openModule(b.dataset.module)});$("closeModal").onclick=()=>$("modal").classList.remove("show");$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("modal").classList.remove("show")});
@@ -479,7 +512,7 @@ function downloadTemplate(){
  const wb=XLSX.utils.book_new();
  const trend=makeTrendData();
  const sheets={
- Wells:[["Well","Rig","Location","Depth_m","TD_m","Hole_Section","Status","Current_Operation","Last_Update"],...state.wells.map(w=>[w.id,w.rig,"Qarnain Field",w.depth,w.td,"12-1/4 in",w.status,w.operation,new Date().toISOString().slice(0,16)])],
+ Wells:[["Well","Rig","Location","Depth_m","TD_m","Hole_Section","Status","Current_Operation","Last_Update"],...state.wells.map(w=>[w.id,w.rig,w.location||"",w.depth,w.td,w.holeSection||"",w.status,w.operation,new Date().toISOString().slice(0,16)])],
  KPIs:[["Parameter","Value","Unit"],["ROP",state.rop,"m/hr"],["WOB",state.wob,"klb"],["RPM",state.rpm,"rpm"],["Torque",state.torque,"kft-lb"],["Hook Load",state.hook,"ton"],["Pump Pressure",state.press,"psi"],["Flow Rate",state.flow,"gpm"],["Mud Weight",state.mw,"sg"],["ECD",state.ecd,"sg"],["Bit Depth",state.depth,"m"]],
  Progress:[["Metric","Value","Unit","Target","Variance"],["Current Depth",state.depth,"m",state.td,""],["Daily Footage",state.dailyFootage,"m",55,""],["Progress",state.depth/state.td,"fraction",1,""]],
  Timeline:[["Time","Depth_m","Event","Category","Status","Duration_min","Comment"],...state.timeline.map(x=>[x.time,x.depth,x.event,x.category,x.status,x.duration||"",""])],
@@ -495,7 +528,8 @@ function downloadTemplate(){
  Well_Test:[["Date","Time","Well","Test_ID","Choke","WHP_psi","PWF_psi","Oil_Rate_STB_d","Water_Rate_STB_d","Gas_Rate_Mscf_d","GOR_scf_STB","Water_Cut_pct","Duration_hr","Remarks"],...(state.wellTests||[]).map(x=>[x.date,x.time,x.well,x.testId,x.choke,x.whp,x.pwf,x.oil,x.water,x.gas,x.gor,x.waterCut,x.duration,x.remarks])],
  Report_Config:[["Field","Value"],...[...Object.entries(state.reportConfig),["Well",state.well],["Rig",state.rig],["Report Date",new Date().toISOString().slice(0,10)]]]
  };
- Object.entries(sheets).forEach(([n,rows])=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),n));
+ const clean=v=>(typeof v==="number"&&!Number.isFinite(v))?"":v;
+ Object.entries(sheets).forEach(([n,rows])=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows.map(r=>r.map(clean))),n));
  XLSX.writeFile(wb,"QARNAIN_Drilling_Operations_Data_Template_V5.xlsx");toast("Engineering Excel template generated with Fuel + Well Test sheets")
 }
 $("templateBtn").onclick=downloadTemplate;
@@ -504,46 +538,70 @@ function loadExcel(file){
   const wb=XLSX.read(e.target.result,{type:"array",cellDates:true});
   const names=wb.SheetNames;const missing=["Wells","KPIs","Progress","Timeline","Geology","Mud_Props","Alerts","Safety","Weather","BHA","Operations_Log","Trends","Fuel","Well_Test","Report_Config"].filter(x=>!names.includes(x));
   if(!names.length){toast("Excel workbook contains no sheets");return}
+  /* Excel is the single source of truth: wipe the demo values first so nothing stale stays on screen */
+  Object.assign(state,{well:"—",rig:"—",depth:0,td:0,rop:NaN,wob:NaN,rpm:NaN,press:NaN,flow:NaN,mw:NaN,hook:NaN,torque:NaN,ecd:NaN,dailyFootage:NaN,operation:"STANDBY",
+    wells:[],formations:[],mud:{},alerts:[],timeline:[],trends:[],fuel:[],wellTests:[],weather:{},safety:[],bha:[],operations:[],reportConfig:{}});
   const rows=n=>parseRows(wb,n);
-  const k= parseKV(rows("KPIs"));
-  const setNum=(prop,names)=>{const v=findVal(k,names);const n=num(v);if(Number.isFinite(n))state[prop]=n};
+  const emptySheets=names.filter(n=>rows(n).filter(r=>Object.values(r).some(v=>v!==""&&v!==null&&v!==undefined)).length===0);
+  const k=parseKV(rows("KPIs"));
+  const setNum=(prop,nm)=>{const v=findVal(k,nm);const n=num(v);if(Number.isFinite(n))state[prop]=n};
   setNum("rop",["ROP","ROP_m_hr"]);setNum("wob",["WOB","WOB_klb"]);setNum("rpm",["RPM"]);setNum("torque",["Torque"]);setNum("hook",["Hook Load","Hook_Load"]);setNum("press",["Pump Pressure","PumpPressure_psi","SPP"]);setNum("flow",["Flow Rate","Flow_gpm"]);setNum("mw",["Mud Weight","MudWeight_sg"]);setNum("ecd",["ECD"]);setNum("depth",["Bit Depth","Current Depth"]);
-  const wr=rows("Wells");if(wr.length){state.wells=wr.map(r=>({id:get(r,"Well"),rig:get(r,"Rig")||"Rig-01",location:get(r,"Location")||"",depth:num(get(r,"Depth_m","Depth"),0),td:num(get(r,"TD_m","TD","Target Depth"),state.td),status:String(get(r,"Status")||"STANDBY"),operation:String(get(r,"Current_Operation","Operation")||get(r,"Status")||"STANDBY")})).filter(x=>x.id);const w=state.wells.find(x=>x.id===state.well)||state.wells[0];if(w){state.well=w.id;state.rig=w.rig;state.depth=w.depth;state.td=w.td;state.operation=w.operation}}
-  const pr=rows("Progress");if(pr.length){const p=parseKV(pr);const cd=num(findVal(p,["Current Depth","CurrentDepth","Bit Depth"]));const td=num(findVal(p,["Target Depth","TD"]));const df=num(findVal(p,["Daily Footage"]));if(Number.isFinite(cd))state.depth=cd;if(Number.isFinite(td))state.td=td;if(Number.isFinite(df))state.dailyFootage=df}
-  const gr=rows("Geology");if(gr.length)state.formations=gr.map(r=>({top:num(get(r,"Top_m","Top"),NaN),base:num(get(r,"Base_m","Base"),NaN),name:String(get(r,"Formation")||"UNKNOWN"),lithology:String(get(r,"Lithology")||""),risk:String(get(r,"Risk")||"LOW")})).filter(x=>Number.isFinite(x.top)&&Number.isFinite(x.base));
-  const mr=rows("Mud_Props");if(mr.length)state.mud=Object.fromEntries(mr.map(r=>[get(r,"Property"),get(r,"Value")]).filter(x=>x[0]!==undefined));
-  const ar=rows("Alerts");if(ar.length)state.alerts=ar.map(r=>({time:get(r,"Time")||"",sev:String(get(r,"Severity")||"INFO"),text:String(get(r,"Event")||""),status:String(get(r,"Status")||"ACTIVE"),depth:num(get(r,"Depth_m","Depth"),undefined)})).filter(x=>x.text);
-  const tr=rows("Timeline");if(tr.length)state.timeline=tr.map(r=>({time:get(r,"Time")||"",depth:num(get(r,"Depth_m","Depth"),state.depth),event:String(get(r,"Event")||""),category:String(get(r,"Category")||"DRILLING"),status:String(get(r,"Status")||"COMPLETE"),duration:num(get(r,"Duration_min","Duration"),0)})).filter(x=>x.event);
-  const wrx=rows("Weather");if(wrx.length){const wv=parseKV(wrx);state.weather={temperature:findVal(wv,["Temperature"])??state.weather.temperature,wind:findVal(wv,["Wind Speed"])??state.weather.wind,condition:findVal(wv,["Condition"])??state.weather.condition}}
-  const sr=rows("Safety");if(sr.length)state.safety=sr.map(r=>({equipment:String(get(r,"Equipment")||""),status:String(get(r,"Status")||"UNKNOWN")})).filter(x=>x.equipment);
-  const br=rows("BHA");if(br.length)state.bha=br.map(r=>({sequence:num(get(r,"Sequence"),0),component:String(get(r,"Component")||""),length:num(get(r,"Length_m","Length"),0),status:String(get(r,"Status")||"" )})).filter(x=>x.component);
-  const or=rows("Operations_Log");if(or.length)state.operations=or;
-  const trd=rows("Trends");if(trd.length)state.trends=trd.map(r=>({time:String(get(r,"Timestamp","Time")||""),depth:num(get(r,"Depth_m","Depth"),state.depth),rop:num(get(r,"ROP_m_hr","ROP"),state.rop),press:num(get(r,"PumpPressure_psi","Pump Pressure","SPP"),state.press),mw:num(get(r,"MudWeight_sg","Mud Weight"),state.mw)})).filter(x=>x.time);
-  const fr=rows("Fuel");state.fuel=fr.length?parseFuelRows(fr):[];
-  const wtr=rows("Well_Test");state.wellTests=wtr.length?parseWellTests(wtr):[];
-  const rc=rows("Report_Config");if(rc.length)state.reportConfig=parseKV(rc);
-  state.source="EXCEL";state.lastFile=file.name;state.sim=false;state.paused=false;state.simSeconds=0;syncUI();toast(`Excel connected · ${file.name} · ${names.length} sheets${missing.length?" · missing: "+missing.join(", "):""}`);
+  const wr=rows("Wells");
+  state.wells=wr.map(r=>({id:String(get(r,"Well")||"").trim(),rig:String(get(r,"Rig")||"").trim()||"—",location:String(get(r,"Location")||""),depth:num(get(r,"Depth_m","Depth"),NaN),td:num(get(r,"TD_m","TD","Target Depth"),NaN),holeSection:String(get(r,"Hole_Section")||""),status:String(get(r,"Status")||"STANDBY"),operation:String(get(r,"Current_Operation","Operation")||get(r,"Status")||"STANDBY"),lastUpdate:xlDate(get(r,"Last_Update"))})).filter(x=>x.id);
+  const w0=state.wells[0];if(w0){state.well=w0.id;state.rig=w0.rig;state.operation=w0.operation;if(Number.isFinite(w0.depth))state.depth=w0.depth;if(Number.isFinite(w0.td))state.td=w0.td}
+  const pr=rows("Progress");if(pr.length){const p=parseKV(pr);const cd=num(findVal(p,["Current Depth","CurrentDepth","Bit Depth"]));const td=num(findVal(p,["Target Depth","TD"]));const df=num(findVal(p,["Daily Footage"]));
+   const cdRow=pr.find(r=>key(r.Metric??r.metric)==="currentdepth");const tgt=cdRow?num(get(cdRow,"Target"),NaN):NaN;
+   if(Number.isFinite(cd))state.depth=cd;if(Number.isFinite(td))state.td=td;else if(Number.isFinite(tgt)&&!(state.td>0))state.td=tgt;if(Number.isFinite(df))state.dailyFootage=df}
+  state.formations=rows("Geology").map(r=>({top:num(get(r,"Top_m","Top"),NaN),base:num(get(r,"Base_m","Base"),NaN),name:String(get(r,"Formation")||"UNKNOWN"),lithology:String(get(r,"Lithology")||""),risk:String(get(r,"Risk")||"LOW")})).filter(x=>Number.isFinite(x.top)&&Number.isFinite(x.base));
+  state.mud=Object.fromEntries(rows("Mud_Props").map(r=>[get(r,"Property"),get(r,"Value")]).filter(x=>x[0]!==undefined&&x[0]!==""));
+  const mv=nm=>num(state.mud[nm],NaN);
+  if(!Number.isFinite(state.mw)&&Number.isFinite(mv("Mud Weight")))state.mw=mv("Mud Weight");
+  if(!Number.isFinite(state.ecd)&&Number.isFinite(mv("ECD")))state.ecd=mv("ECD");
+  if(!Number.isFinite(state.flow)&&Number.isFinite(mv("Flow Rate")))state.flow=mv("Flow Rate");
+  state.alerts=rows("Alerts").map(r=>({time:xlTime(get(r,"Time")),sev:String(get(r,"Severity")||"INFO"),text:String(get(r,"Event")||""),status:String(get(r,"Status")||"ACTIVE"),depth:num(get(r,"Depth_m","Depth"),undefined)})).filter(x=>x.text);
+  state.timeline=rows("Timeline").map(r=>({time:xlTime(get(r,"Time")),depth:num(get(r,"Depth_m","Depth"),state.depth),event:String(get(r,"Event")||""),category:String(get(r,"Category")||"DRILLING"),status:String(get(r,"Status")||"COMPLETE"),duration:num(get(r,"Duration_min","Duration"),0)})).filter(x=>x.event);
+  const wrx=rows("Weather");if(wrx.length){const wv=parseKV(wrx);state.weather={temperature:findVal(wv,["Temperature"]),wind:findVal(wv,["Wind Speed"]),condition:findVal(wv,["Condition"])}}
+  state.safety=rows("Safety").map(r=>({equipment:String(get(r,"Equipment")||""),status:String(get(r,"Status")||"UNKNOWN"),rating:String(get(r,"Pressure_Rating")||""),lastTest:xlDate(get(r,"Last_Test")),nextTest:xlDate(get(r,"Next_Test")),comment:String(get(r,"Comment")||"")})).filter(x=>x.equipment);
+  state.bha=rows("BHA").map(r=>({sequence:num(get(r,"Sequence"),0),component:String(get(r,"Component")||""),length:num(get(r,"Length_m","Length"),0),status:String(get(r,"Status")||"")})).filter(x=>x.component);
+  state.operations=rows("Operations_Log").map(r=>{const hrs=num(get(r,"Duration_hrs","Duration_hr","Duration_hours"),NaN),mins=num(get(r,"Duration_min","Duration_mins"),NaN);
+    return{date:xlDate(get(r,"Date")),time:xlTime(get(r,"Time")),well:String(get(r,"Well")||""),operation:String(get(r,"Operation")||""),depth:num(get(r,"Depth_m","Depth"),NaN),durationMin:Number.isFinite(hrs)?hrs*60:mins,npt:num(get(r,"NPT_min","NPT"),NaN),comment:String(get(r,"Comment")||"")}}).filter(x=>x.operation||x.comment);
+  state.trends=rows("Trends").map(r=>({time:xlStamp(get(r,"Timestamp","Time")),depth:num(get(r,"Depth_m","Depth"),state.depth),rop:num(get(r,"ROP_m_hr","ROP"),state.rop),press:num(get(r,"PumpPressure_psi","Pump Pressure","SPP"),state.press),mw:num(get(r,"MudWeight_sg","Mud Weight"),state.mw)})).filter(x=>x.time);
+  state.fuel=parseFuelRows(rows("Fuel"));
+  state.wellTests=parseWellTests(rows("Well_Test"));
+  /* Report_Config: keys come back lower-cased, map them to the names the report uses */
+  const rc=parseKV(rows("Report_Config"));
+  const cfg={field:rc.field,title:rc.title,preparedFor:rc.preparedfor,preparedBy:rc.preparedby,reportDate:xlDate(rc.reportdate),reportPeriod:rc.reportperiod,confidentiality:rc.confidentiality};
+  Object.keys(cfg).forEach(x=>{if(cfg[x]===undefined||cfg[x]==="")delete cfg[x]});
+  state.reportConfig=cfg;
+  if(!state.wells.length){if(rc.well)state.well=String(rc.well);if(rc.rig)state.rig=String(rc.rig)}
+  state.source="EXCEL";state.lastFile=file.name;state.sim=false;state.paused=false;state.simSeconds=0;syncUI();
+  console.info("Excel loaded. Sheets without data rows:",emptySheets);
+  toast(`Excel connected · ${file.name} · ${names.length} sheets${missing.length?" · missing: "+missing.join(", "):""}${emptySheets.length?" · no data rows in: "+emptySheets.join(", "):""}`,7000);
  }catch(err){console.error(err);toast("Excel parsing error — check sheet names and headers")}};reader.readAsArrayBuffer(file)}
 $("excelInput").onchange=e=>{if(e.target.files[0])loadExcel(e.target.files[0])};
 function buildExecutiveReport(){
  const esc=v=>String(v??"—").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
  const f=formationAt(state.depth), active=state.alerts.filter(a=>a.status==="ACTIVE").length;
+ const curWell=(state.wells||[]).find(x=>x.id===state.well)||{}, cfg=state.reportConfig||{};
  const progress=state.td?Math.min(100,state.depth/state.td*100):0;
  const mud=state.mud||{};
  const getMud=(...keys)=>{for(const k of keys){const v=mud[k]??mud[k.replace(/ /g,"_")];if(v!==undefined&&v!=="")return v}return "—"};
  const byTank=fuelByTank(), fuelRows=[];
- for(let i=1;i<=7;i++){
-   const arr=byTank[`Tank-${i}`]||[], x=arr.length?arr[arr.length-1]:null;
-   fuelRows.push(`<tr><td><b>Tank-${i}</b></td><td>${x?fmt(x.opening,0):"—"}</td><td>${x?fmt(x.received,0):"—"}</td><td>${x?fmt(x.issued,0):"—"}</td><td>${x?fmt(x.consumed,0):"—"}</td><td class="remaining">${x?fmt(x.remaining,0):"—"}</td><td>${x?esc(x.date):"—"}</td></tr>`);
- }
+ fuelTankNames().forEach(tname=>{
+   const arr=byTank[tname]||[], x=arr.length?arr[arr.length-1]:null;
+   fuelRows.push(`<tr><td><b>${esc(tname)}</b></td><td>${x?fmt(x.opening,0):"—"}</td><td>${x?fmt(x.received,0):"—"}</td><td>${x?fmt(x.issued,0):"—"}</td><td>${x?fmt(x.consumed,0):"—"}</td><td class="remaining">${x?fmt(x.remaining,0):"—"}</td><td>${x?esc(x.date):"—"}</td></tr>`);
+ });
+ if(!fuelRows.length)fuelRows.push('<tr><td colspan="7" class="muted">No fuel records loaded</td></tr>');
  const fuelReceived=(state.fuel||[]).reduce((a,r)=>a+(Number(r.received)||0),0);
  const fuelIssued=(state.fuel||[]).reduce((a,r)=>a+(Number(r.issued)||0),0);
  const fuelConsumed=(state.fuel||[]).reduce((a,r)=>a+(Number(r.consumed)||0),0);
- const fuelRemaining=Array.from({length:7},(_,i)=>{const a=byTank[`Tank-${i+1}`]||[];const x=a.length?a[a.length-1]:null;return x?Number(x.remaining)||0:0}).reduce((a,v)=>a+v,0);
+ const fuelRemaining=fuelTankNames().map(t=>{const a=byTank[t]||[];const x=a.length?a[a.length-1]:null;return x?Number(x.remaining)||0:0}).reduce((a,v)=>a+v,0);
  const wt=state.wellTests||[], latestWT=wt.length?wt[wt.length-1]:null;
  const wtRows=latestWT||{};
  const timeline=state.timeline||[];
  const dailyRows=timeline.slice(0,6).map((e,i)=>{const next=timeline[i+1];const d1=Number(e.depth)||0;const d2=next?Number(next.depth)||d1:Number(state.depth)||d1;return `<tr><td>${esc(e.time)}</td><td>${fmt(d1,0)}</td><td>${fmt(d2,0)}</td><td>${fmt(Math.max(0,d2-d1),0)}</td><td>${esc(e.category||e.event)}</td><td>${esc(e.event)}</td></tr>`}).join("");
+ const opsL=state.operations||[];
+ const opRows=opsL.slice(0,6).map((o,i)=>{const nx=opsL[i+1];const d1=o.depth;const d2=nx&&Number.isFinite(nx.depth)?nx.depth:(Number.isFinite(d1)&&state.depth>0?state.depth:d1);const ft=Number.isFinite(d1)&&Number.isFinite(d2)?Math.max(0,d2-d1):NaN;return `<tr><td>${esc((o.date+" "+o.time).trim())}</td><td>${fmt(d1,0)}</td><td>${fmt(d2,0)}</td><td>${fmt(ft,0)}</td><td>${esc(o.operation)}</td><td>${esc(o.comment)}</td></tr>`}).join("");
  const dailyFallback=`<tr><td colspan="6" class="muted">No daily operations records loaded</td></tr>`;
  const mudChartVals=[Number(getMud("Mud Weight")),Number(getMud("PV")),Number(getMud("YP"))].filter(Number.isFinite);
  const wtOil=wt.map(x=>Number(x.oil)).filter(Number.isFinite), wtWater=wt.map(x=>Number(x.water)).filter(Number.isFinite), wtGas=wt.map(x=>Number(x.gas)).filter(Number.isFinite);
@@ -558,14 +616,14 @@ function buildExecutiveReport(){
  const oilChart=lineSvg(wtOil,"bbl/d","OIL RATE TREND"), waterChart=lineSvg(wtWater,"bbl/d","WATER RATE TREND"), gasChart=lineSvg(wtGas,"Mscf/d","GAS RATE TREND");
  const depthPct=Math.max(0,Math.min(100,progress));
  const generated=new Date().toLocaleString();
- return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(state.well)} — Final Operations Report</title><style>
+ return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(state.well)} — ${esc(cfg.title||"Final Operations Report")}</title><style>
  @page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}body{margin:0;background:#eef2f4;color:#17212a;font-family:Arial,Helvetica,sans-serif}.page{width:1180px;min-height:820px;margin:12px auto;background:#fff;border:1px solid #d5dde1;padding:14px 16px 12px}.top{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:center;border-bottom:1px solid #bfcbd1;padding-bottom:9px}.brand{display:flex;align-items:center;gap:10px}.logo{width:40px;height:40px;position:relative}.logo:before{content:"";position:absolute;left:18px;top:0;width:3px;height:35px;background:#1b2b38;transform:skew(-12deg)}.logo:after{content:"";position:absolute;left:7px;bottom:1px;width:25px;height:4px;border-bottom:3px solid #c79a37;border-radius:50%}.brandName{font-size:25px;font-weight:800;letter-spacing:.3px}.brandSub{font-size:10px;letter-spacing:1.7px;color:#64737c;margin-top:1px}.draft{text-align:center;color:#d71919;font-size:42px;font-weight:900;letter-spacing:1px}.title{text-align:right}.title b{display:block;font-size:21px}.title span{font-size:12px;color:#4e5e68}.meta{display:grid;grid-template-columns:1fr 1.55fr 1fr;border:1px solid #c8d2d7;margin-top:7px;font-size:10px}.meta .cell{display:grid;grid-template-columns:115px 1fr;border-bottom:1px solid #d6dfe3;min-height:25px}.meta .cell:nth-last-child(-n+3){border-bottom:0}.meta b{padding:6px 8px;background:#edf3f6}.meta span{padding:6px 8px}.section{margin-top:7px;border:1px solid #c7d1d6}.sectionHead{background:#08284b;color:#fff;font-size:12px;font-weight:800;padding:6px 8px;letter-spacing:.3px}.grid3{display:grid;grid-template-columns:1.2fr .9fr 1.55fr;gap:7px}.gridMud{display:grid;grid-template-columns:1.15fr 1.05fr;gap:7px}.gridFuelWT{display:grid;grid-template-columns:1.55fr 1fr;gap:7px}.wellSummary{display:grid;grid-template-columns:1.15fr .85fr;min-height:165px}.kv{padding:7px 9px}.kvRow{display:grid;grid-template-columns:120px 1fr;border-bottom:1px solid #dfe5e8;font-size:10px;min-height:21px;align-items:center}.kvRow b{padding:3px 5px}.kvRow span{padding:3px 5px}.progressBox{display:flex;align-items:center;justify-content:center;border-left:1px solid #d3dce0}.depthVisual{height:130px;width:100px;border:1px solid #cfd8dc;background:linear-gradient(to bottom,#f6f8f9,#edf1f3);position:relative}.depthFill{position:absolute;left:20px;right:20px;bottom:18px;height:${depthPct.toFixed(1)}%;background:#0a3d78}.depthLabel{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:9px;font-weight:700}.axisLabel{font-size:9px;color:#596a73;margin-top:4px;text-align:center}.perfTable,.dailyTable,.fuelTable{width:100%;border-collapse:collapse;font-size:9px}.perfTable th,.dailyTable th,.fuelTable th{background:#edf3f6;font-weight:800}.perfTable th,.perfTable td,.dailyTable th,.dailyTable td,.fuelTable th,.fuelTable td{border:1px solid #d4dde1;padding:4px 5px;text-align:center}.dailyTable td:first-child,.fuelTable td:first-child{text-align:left}.statusOk{display:inline-block;background:#3c8d54;color:#fff;border-radius:3px;padding:2px 5px;font-size:8px;font-weight:700}.summaryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:6px}.summaryCard{border:1px solid #cbd5da;background:#f7fafb;text-align:center;padding:6px}.summaryCard .label{font-size:8px;color:#50616a;font-weight:700}.summaryCard .value{font-size:15px;font-weight:900;margin-top:3px}.summaryCard:last-child{background:#f3f8df}.summaryCard:last-child .value{color:#3f6e2f}.chartBox{border:1px solid #d2dce0;background:#fff;min-height:160px;padding:4px}.chartSvg{width:100%;height:145px}.chartTitle{font-size:10px;font-weight:800;fill:#26353e}.axis{stroke:#aab6bc;stroke-width:1}.series{fill:none;stroke:#527f52;stroke-width:2.5}.dot{fill:#527f52}.tick,.unit{font-size:7px;fill:#64737b}.chartEmpty{height:150px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#849197}.wellTestInfo{display:grid;grid-template-columns:1fr 1fr}.wellTestInfo .kvRow{grid-template-columns:90px 1fr}.remarks{font-size:10px;line-height:1.5;padding:7px 9px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:10px;border-top:1px solid #c6d0d5;padding-top:5px}.sig{text-align:center;font-size:11px}.sigLine{border-top:1px solid #6e7b82;margin:17px 18px 7px}.sig b{font-size:11px}.sigRole{font-size:10px;margin-top:2px}.foot{border-top:1px solid #d1d9dd;margin-top:10px;padding-top:6px;font-size:9px;color:#66747c;display:flex;justify-content:space-between}.muted{color:#7d8a90;text-align:center!important}.remaining{font-weight:800;background:#f4f8e6}@media print{body{background:#fff}.page{margin:0;border:0;width:auto;min-height:auto;padding:4mm}}
  </style></head><body><div class="page">
- <div class="top"><div class="brand"><div class="logo"></div><div><div class="brandName">MdOC</div><div class="brandSub">MIDLAND OIL COMPANY</div></div></div><div class="draft">DRAFT</div><div class="title"><b>FINAL OPERATIONS REPORT</b><span>QARNAIN OIL FIELD — DRILLING OPERATIONS</span></div></div>
- <div class="meta"><div class="cell"><b>WELL</b><span>${esc(state.well)}</span></div><div class="cell"><b>REPORT PERIOD</b><span>${esc(state.reportConfig.reportPeriod||"Current Operations")}</span></div><div class="cell"><b>MODE</b><span>${esc(state.operation||"DRILLING")}</span></div><div class="cell"><b>RIG</b><span>${esc(state.rig)}</span></div><div class="cell"><b>REPORT DATE</b><span>${esc(state.reportConfig.reportDate||new Date().toLocaleDateString())}</span></div><div class="cell"><b>REPORT TYPE</b><span>FINAL</span></div><div class="cell"><b>FIELD</b><span>${esc(state.reportConfig.field||"Qarnain")}</span></div><div class="cell"><b>DEPTH (m)</b><span>${fmt(state.depth,0)}</span></div><div class="cell"><b>PREPARED FOR</b><span>Operations Management</span></div></div>
- <div class="grid3"><div class="section"><div class="sectionHead">1. WELL SUMMARY</div><div class="wellSummary"><div class="kv"><div class="kvRow"><b>Well Name</b><span>${esc(state.well)}</span></div><div class="kvRow"><b>Rig</b><span>${esc(state.rig)}</span></div><div class="kvRow"><b>Field</b><span>${esc(state.reportConfig.field||"Qarnain")}</span></div><div class="kvRow"><b>Current Depth</b><span>${fmt(state.depth,0)} m</span></div><div class="kvRow"><b>Current Status</b><span><span class="statusOk">${esc(state.operation||"DRILLING")}</span></span></div><div class="kvRow"><b>Operation</b><span>${esc(state.operation||"Rotary Drilling")}</span></div><div class="kvRow"><b>Hole Size</b><span>12 1/4 in</span></div></div><div class="progressBox"><div><div class="depthVisual"><div class="depthFill"></div><div class="depthLabel">${fmt(state.depth,0)} m</div></div><div class="axisLabel">TD: ${fmt(state.td,0)} m</div></div></div></div></div>
+ <div class="top"><div class="brand"><div class="logo"></div><div><div class="brandName">MdOC</div><div class="brandSub">MIDLAND OIL COMPANY</div></div></div><div class="draft">DRAFT</div><div class="title"><b>${esc(cfg.title||"FINAL OPERATIONS REPORT")}</b><span>${esc((cfg.field||"Qarnain Oil Field").toUpperCase())} — DRILLING OPERATIONS</span></div></div>
+ <div class="meta"><div class="cell"><b>WELL</b><span>${esc(state.well)}</span></div><div class="cell"><b>REPORT PERIOD</b><span>${esc(state.reportConfig.reportPeriod||"Current Operations")}</span></div><div class="cell"><b>MODE</b><span>${esc(state.operation||"DRILLING")}</span></div><div class="cell"><b>RIG</b><span>${esc(state.rig)}</span></div><div class="cell"><b>REPORT DATE</b><span>${esc(state.reportConfig.reportDate||new Date().toLocaleDateString())}</span></div><div class="cell"><b>REPORT TYPE</b><span>FINAL</span></div><div class="cell"><b>FIELD</b><span>${esc(state.reportConfig.field||"Qarnain")}</span></div><div class="cell"><b>DEPTH (m)</b><span>${fmt(state.depth,0)}</span></div><div class="cell"><b>PREPARED FOR</b><span>${esc(cfg.preparedFor||"Operations Management")}</span></div></div>
+ <div class="grid3"><div class="section"><div class="sectionHead">1. WELL SUMMARY</div><div class="wellSummary"><div class="kv"><div class="kvRow"><b>Well Name</b><span>${esc(state.well)}</span></div><div class="kvRow"><b>Rig</b><span>${esc(state.rig)}</span></div><div class="kvRow"><b>Field</b><span>${esc(state.reportConfig.field||"Qarnain")}</span></div><div class="kvRow"><b>Current Depth</b><span>${fmt(state.depth,0)} m</span></div><div class="kvRow"><b>Current Status</b><span><span class="statusOk">${esc(state.operation||"DRILLING")}</span></span></div><div class="kvRow"><b>Operation</b><span>${esc(state.operation||"Rotary Drilling")}</span></div><div class="kvRow"><b>Hole Size</b><span>${esc(curWell.holeSection||"—")}</span></div></div><div class="progressBox"><div><div class="depthVisual"><div class="depthFill"></div><div class="depthLabel">${fmt(state.depth,0)} m</div></div><div class="axisLabel">TD: ${fmt(state.td,0)} m</div></div></div></div></div>
  <div class="section"><div class="sectionHead">2. DRILLING PERFORMANCE</div><table class="perfTable"><tr><th>Parameter</th><th>Value</th><th>Unit</th></tr><tr><td>ROP Average</td><td>${fmt(state.rop,1)}</td><td>m/hr</td></tr><tr><td>WOB Average</td><td>${fmt(state.wob,1)}</td><td>klb</td></tr><tr><td>RPM</td><td>${fmt(state.rpm,0)}</td><td>rpm</td></tr><tr><td>Torque</td><td>${fmt(state.torque,1)}</td><td>kft-lb</td></tr><tr><td>Pump Pressure</td><td>${fmt(state.press,0)}</td><td>psi</td></tr><tr><td>Flow Rate</td><td>${fmt(state.flow,0)}</td><td>gpm</td></tr><tr><td>Mud Weight</td><td>${fmt(state.mw,2)}</td><td>sg</td></tr><tr><td>ECD</td><td>${fmt(state.ecd,2)}</td><td>sg</td></tr></table></div>
- <div class="section"><div class="sectionHead">3. DAILY OPERATIONS SUMMARY</div><table class="dailyTable"><tr><th>Date / Time</th><th>Depth In</th><th>Depth Out</th><th>Footage</th><th>Operation</th><th>Remarks</th></tr>${dailyRows||dailyFallback}</table><div class="remarks"><b>Progress:</b> ${depthPct.toFixed(1)}% of planned TD. <b>Active alerts:</b> ${active}.</div></div></div>
+ <div class="section"><div class="sectionHead">3. DAILY OPERATIONS SUMMARY</div><table class="dailyTable"><tr><th>Date / Time</th><th>Depth In</th><th>Depth Out</th><th>Footage</th><th>Operation</th><th>Remarks</th></tr>${opRows||dailyRows||dailyFallback}</table><div class="remarks"><b>Progress:</b> ${depthPct.toFixed(1)}% of planned TD. <b>Active alerts:</b> ${active}.</div></div></div>
  <div class="gridMud"><div class="section"><div class="sectionHead">4. MUD SUMMARY (LAST RECORD)</div><div style="display:grid;grid-template-columns:1fr 1.15fr;gap:5px;padding:5px"><div class="kv"><div class="kvRow"><b>Mud Weight</b><span>${esc(getMud("Mud Weight"))} SG</span></div><div class="kvRow"><b>PV</b><span>${esc(getMud("PV"))} cP</span></div><div class="kvRow"><b>YP</b><span>${esc(getMud("YP"))} lb/100ft²</span></div><div class="kvRow"><b>Gel 10s</b><span>${esc(getMud("Gel 10 sec"))}</span></div><div class="kvRow"><b>Fluid Loss</b><span>${esc(getMud("Fluid Loss"))} ml</span></div><div class="kvRow"><b>pH</b><span>${esc(getMud("pH"))}</span></div><div class="kvRow"><b>ECD</b><span>${esc(getMud("ECD"))} SG</span></div></div><div class="chartBox">${lineSvg(mudChartVals,"mixed","MUD PROPERTY TREND")}</div></div></div>
  <div class="section"><div class="sectionHead">5. FUEL INVENTORY SUMMARY (BY TANKS)</div><div class="summaryGrid"><div class="summaryCard"><div class="label">TOTAL RECEIVED</div><div class="value">${fmt(fuelReceived,0)} L</div></div><div class="summaryCard"><div class="label">TOTAL ISSUED</div><div class="value">${fmt(fuelIssued,0)} L</div></div><div class="summaryCard"><div class="label">TOTAL CONSUMED</div><div class="value">${fmt(fuelConsumed,0)} L</div></div><div class="summaryCard"><div class="label">CURRENT REMAINING</div><div class="value">${fmt(fuelRemaining,0)} L</div></div></div><table class="fuelTable"><tr><th>Tank</th><th>Opening (L)</th><th>Received (L)</th><th>Issued (L)</th><th>Consumed (L)</th><th>Remaining (L)</th><th>Last Update</th></tr>${fuelRows.join('')}</table></div></div>
  <div class="gridFuelWT"><div class="section"><div class="sectionHead">6. WELL TEST SUMMARY (LAST RECORD)</div><div class="wellTestInfo"><div class="kv"><div class="kvRow"><b>Test ID</b><span>${esc(wtRows.testId||"—")}</span></div><div class="kvRow"><b>Test Date</b><span>${esc((wtRows.date||"")+((wtRows.time?" "+wtRows.time:""))||"—")}</span></div><div class="kvRow"><b>Choke Size</b><span>${Number.isFinite(wtRows.choke)?fmt(wtRows.choke,1):"—"}</span></div><div class="kvRow"><b>WHP</b><span>${Number.isFinite(wtRows.whp)?fmt(wtRows.whp,0):"—"} psi</span></div><div class="kvRow"><b>PWF</b><span>${Number.isFinite(wtRows.pwf)?fmt(wtRows.pwf,0):"—"} psi</span></div><div class="kvRow"><b>Oil Rate</b><span>${Number.isFinite(wtRows.oil)?fmt(wtRows.oil,0):"—"} bbl/d</span></div><div class="kvRow"><b>Water Rate</b><span>${Number.isFinite(wtRows.water)?fmt(wtRows.water,0):"—"} bbl/d</span></div><div class="kvRow"><b>Gas Rate</b><span>${Number.isFinite(wtRows.gas)?fmt(wtRows.gas,2):"—"} Mscf/d</span></div><div class="kvRow"><b>Water Cut</b><span>${Number.isFinite(wtRows.waterCut)?fmt(wtRows.waterCut,1):"—"} %</span></div></div><div style="display:grid;grid-template-rows:1fr 1fr;gap:5px"><div class="chartBox">${oilChart}</div><div class="chartBox">${waterChart}</div></div></div></div>
